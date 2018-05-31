@@ -6,13 +6,14 @@
 
     <groupId>com.carousell</groupId>
     <artifactId>diggit</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vertx.version>3.5.1</vertx.version>
         <main.class>com.carousell.diggit.Main</main.class>
         <fat-jar>${project.artifactId}-${project.version}-fat.jar</fat-jar>
+        <app.name>carousell-diggit</app.name>
     </properties>
 
     <dependencies>
@@ -71,8 +72,7 @@
                 <version>2.0.3</version>
                 <configuration>
                     <processTypes>
-                        <web>java $JAVA_OPTS -Dhttp.port=$PORT -jar target/${fat-jar}
-                        </web>
+                        <web>java $JAVA_OPTS -Dhttp.port=$PORT -jar target/${fat-jar}</web>
                     </processTypes>
                     <appName>${app.name}</appName>
                 </configuration>
@@ -117,22 +117,5 @@
             </plugin>
         </plugins>
     </build>
-
-
-    <profiles>
-        <profile>
-            <id>stg</id>
-            <properties>
-                <app.name>carousell-diggit-staging</app.name>
-            </properties>
-        </profile>
-        <profile>
-            <id>prd</id>
-            <properties>
-                <app.name>carousell-diggit-production</app.name>
-            </properties>
-        </profile>
-    </profiles>
-
 
 </project>

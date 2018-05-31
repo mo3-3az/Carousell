@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Carousell - Challenge</title>
+    <title>diggit</title>
 </head>
 <body>
 <p>Hello world!</p>
