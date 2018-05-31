@@ -33,6 +33,8 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
+            <classifier>client</classifier>
+            <type>js</type>
         </dependency>
 
         <dependency>

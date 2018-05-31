@@ -5,10 +5,15 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.templ.FreeMarkerTemplateEngine;
 import io.vertx.ext.web.templ.TemplateEngine;
+import org.apache.log4j.Logger;
 
 /**
  * This is the main verticle, here an implementation of a web server will be done.
@@ -17,8 +22,12 @@ import io.vertx.ext.web.templ.TemplateEngine;
  */
 public class WebServer extends AbstractVerticle {
 
-    public static final String SYS_PROPERTY_HTTP_PORT = "http.port";
-    public static final int DEFAULT_HTTP_PORT = 8080;
+    private final static Logger LOG = Logger.getLogger(WebServer.class);
+
+    private static final String SYS_PROPERTY_HTTP_PORT = "http.port";
+    private static final int DEFAULT_HTTP_PORT = 8080;
+    private static final String ROOT_PATH = "/";
+    public static final String PATH_EVENT_BUS = "/eventbus/*";
 
     @Override
     public void start(Future<Void> future) {
@@ -36,14 +45,27 @@ public class WebServer extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         TemplateEngine engine = FreeMarkerTemplateEngine.create();
+        ((FreeMarkerTemplateEngine) engine).setMaxCacheSize(0);
         TemplateHandler handler = TemplateHandler.create(engine);
-        router.get("/").handler(handler);
+        router.get(ROOT_PATH).handler(handler);
+
+        router.route("/*").handler(StaticHandler.create());
+
+        SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
+        BridgeOptions options = new BridgeOptions();
+        options.addOutboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS));
+        options.addInboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS));
+        sockJSHandler.bridge(options);
+        router.route(PATH_EVENT_BUS).handler(sockJSHandler);
+
 
         vertx.createHttpServer().requestHandler(router::accept).listen(Integer.getInteger(SYS_PROPERTY_HTTP_PORT, DEFAULT_HTTP_PORT), result -> {
-            if (result.succeeded()) {
-                future.complete();
-            } else {
+            if (result.failed()) {
+                LOG.error("Web Server failed to start!", result.cause());
                 future.fail(result.cause());
+            } else {
+                LOG.info("Web Server started successfully.");
+                future.complete();
             }
         });
     }
