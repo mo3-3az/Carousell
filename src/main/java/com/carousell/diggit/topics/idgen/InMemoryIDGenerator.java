@@ -5,6 +5,8 @@ import io.vertx.core.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * This generator generates unique sequential ids starting from 1.
+ *
  * @author Moath
  */
 public class InMemoryIDGenerator implements IDGenerator {
