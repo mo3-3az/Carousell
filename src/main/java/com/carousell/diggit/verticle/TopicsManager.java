@@ -1,8 +1,8 @@
 package com.carousell.diggit.verticle;
 
-import com.carousell.diggit.topics.InMemTopicStore;
 import com.carousell.diggit.topics.Topic;
-import com.carousell.diggit.topics.TopicsStore;
+import com.carousell.diggit.topics.store.InMemTopicStore;
+import com.carousell.diggit.topics.store.TopicsStore;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
  */
 public class TopicsManager extends AbstractVerticle {
 
-    public static final String TOPICS_MANAGER_ADDRESS = "topics.manager";
-    public static final String TOPICS_MANAGER_ADDRESS_PUBISH = "topics.manager.publish";
+    static final String TOPICS_MANAGER_ADDRESS = "topics.manager";
+    static final String TOPICS_MANAGER_ADDRESS_PUBISH = "topics.manager.publish";
 
     private final static Logger LOG = Logger.getLogger(TopicsManager.class);
 
@@ -33,7 +33,7 @@ public class TopicsManager extends AbstractVerticle {
     @Override
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
-        topicsStore = new InMemTopicStore();
+        topicsStore = new InMemTopicStore(vertx);
     }
 
     @Override
@@ -55,17 +55,11 @@ public class TopicsManager extends AbstractVerticle {
                 if (event.succeeded()) {
                     eventBus.publish(TOPICS_MANAGER_ADDRESS_PUBISH, JsonObject.mapFrom(new Topic(topicText, event.result())));
                 } else {
-                    LOG.warn("Topic wasn't registered!", event.cause());
+                    LOG.warn("Topic wasn't added!", event.cause());
                 }
             });
-        }).completionHandler(event -> {
-            if (event.failed()) {
-                future.fail(event.cause());
-                LOG.error("Registering Topics Manager failed.", event.cause());
-            } else {
-                LOG.info("Topics Manager registered successfully.");
-                future.complete();
-            }
         });
+
+
     }
 }

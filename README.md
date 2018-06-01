@@ -15,7 +15,9 @@ You can also run the fat jar by: java -jar target/diggit-1.0-fat.jar<br/>
 Access online (Heroku) on: https://carousell-diggit.herokuapp.com
 
 ####Technical
-Modules (Verticles)
+Modules
 1. Wev Server.
 1. Topics Manager.
+1. Topics Store.
+1. ID Generator.
 

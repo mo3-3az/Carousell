@@ -1,48 +1,46 @@
 package com.carousell.diggit.topics;
 
-/**
- * @author Moath
- */
-public class Topic {
+import io.vertx.core.buffer.impl.BufferImpl;
+
+public class Topic extends BufferImpl {
+
     private String text;
     private String id;
-    int upVotes;
-    int downVotes;
+    int votes;
 
     public Topic(String text, String id) {
         this.text = text;
         this.id = id;
+        setValue();
     }
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public int getVotes() {
+        return votes;
     }
 
-    public int getUpVotes() {
-        return upVotes;
+    public void upVotes() {
+        votes++;
+        setValue();
     }
 
-    public void setUpVotes(int upVotes) {
-        this.upVotes = upVotes;
+    public void downVotes() {
+        if (votes == 0) {
+            return;
+        }
+
+        votes--;
+        setValue();
     }
 
-    public int getDownVotes() {
-        return downVotes;
+    private void setValue() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(id).append(text).append(votes);
+        appendString(stringBuilder.toString());
     }
 
-    public void setDownVotes(int downVotes) {
-        this.downVotes = downVotes;
-    }
 }
