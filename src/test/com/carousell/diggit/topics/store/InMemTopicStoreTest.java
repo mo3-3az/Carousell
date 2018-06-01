@@ -1,5 +1,6 @@
 package com.carousell.diggit.topics.store;
 
+import com.carousell.diggit.topics.Topic;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class InMemTopicStoreTest extends TestCase {
@@ -58,11 +60,13 @@ public class InMemTopicStoreTest extends TestCase {
 
     @Test
     public void testAddTopic(TestContext testContext) {
-        inMemTopicStore2.addTopic("Topic 1").setHandler(event -> {
+        final String text = "Topic 1";
+        inMemTopicStore2.addTopic(text).setHandler(event -> {
             if (event.succeeded()) {
                 inMemTopicStore2.getTopics(1).setHandler(event1 -> {
                     if (event1.succeeded()) {
-                        testContext.assertEquals(event1.result().size(), 1);
+                        final List<Topic> topics = event1.result();
+                        testContext.assertTrue(topics.size() == 1 && topics.get(0).getText().equals(text));
                     } else {
                         fail();
                     }
