@@ -17,6 +17,13 @@ public class InMemoryIDGeneratorTest extends TestCase {
         inMemoryIDGenerator = new InMemoryIDGenerator();
     }
 
+    /**
+     * Test goes as follows:
+     * <ol>
+     * <li>Generate 3 ids.</li>
+     * <li>Generate 1 id and check if the value is 4.</li>
+     * </ol>
+     */
     @Test
     public void testGenerateID(TestContext testContext) {
         CompositeFuture.join(Arrays.asList(

@@ -28,10 +28,6 @@ public class InMemTopicStore implements TopicsStore {
     private AsyncMap<String, Topic> topics;
 
     public InMemTopicStore(Vertx vertx) {
-        this(vertx, TOPICS_MAP);
-    }
-
-    public InMemTopicStore(Vertx vertx, String mapName) {
         this.idGenerator = new InMemoryIDGenerator();
         vertx.sharedData().<String, Topic>getAsyncMap(TOPICS_MAP, res -> {
             if (res.succeeded()) {

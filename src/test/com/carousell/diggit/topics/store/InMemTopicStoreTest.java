@@ -13,59 +13,38 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Note: For every test the store will be re-initialized to avoid any inconsistencies.
+ *
+ * @author Moath
+ */
 @RunWith(VertxUnitRunner.class)
 public class InMemTopicStoreTest extends TestCase {
 
     private Vertx vertx;
-    private InMemTopicStore inMemTopicStore1;
-    private InMemTopicStore inMemTopicStore2;
-    private InMemTopicStore inMemTopicStore3;
-    private InMemTopicStore inMemTopicStore4;
+    private InMemTopicStore inMemTopicStore;
 
     public InMemTopicStoreTest() {
         vertx = Vertx.vertx();
-        inMemTopicStore1 = new InMemTopicStore(vertx, "map1");
-        inMemTopicStore2 = new InMemTopicStore(vertx, "map2");
-        inMemTopicStore3 = new InMemTopicStore(vertx, "map3");
-        inMemTopicStore4 = new InMemTopicStore(vertx, "map4");
+        inMemTopicStore = new InMemTopicStore(vertx);
     }
 
-    @Test
-    public void getTopics(TestContext testContext) {
-        CompositeFuture compositeFuture = CompositeFuture.join(Arrays.asList(
-                inMemTopicStore1.addTopic("Topic 1"),
-                inMemTopicStore1.addTopic("Topic 2"),
-                inMemTopicStore1.addTopic("Topic 3"),
-                inMemTopicStore1.addTopic("Topic 4")
-        ));
-
-        final Async async = testContext.async();
-
-        compositeFuture.setHandler(event -> {
-            if (event.succeeded()) {
-                inMemTopicStore1.getTopics(4).setHandler(event1 -> {
-                    if (event1.succeeded()) {
-                        testContext.assertEquals(event.result().size(), 4);
-                    } else {
-                        fail();
-                    }
-                });
-
-                async.complete();
-            } else {
-                fail();
-            }
-        });
-    }
-
+    /**
+     * Test goes as follows:
+     * <ol>
+     * <li>Add a topic.</li>
+     * <li>Check if you have 1 topic and it's text is what was added.</li>
+     * </ol>
+     */
     @Test
     public void testAddTopic(TestContext testContext) {
+        inMemTopicStore = new InMemTopicStore(vertx);
         final String text = "Topic 1";
-        inMemTopicStore2.addTopic(text).setHandler(event -> {
-            if (event.succeeded()) {
-                inMemTopicStore2.getTopics(1).setHandler(event1 -> {
-                    if (event1.succeeded()) {
-                        final List<Topic> topics = event1.result();
+        inMemTopicStore.addTopic(text).setHandler(addTopicEvent -> {
+            if (addTopicEvent.succeeded()) {
+                inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
+                    if (getTopicsEvent.succeeded()) {
+                        final List<Topic> topics = getTopicsEvent.result();
                         testContext.assertTrue(topics.size() == 1 && topics.get(0).getText().equals(text));
                     } else {
                         fail();
@@ -78,32 +57,36 @@ public class InMemTopicStoreTest extends TestCase {
         });
     }
 
-
+    /**
+     * Test goes as follows:
+     * <ol>
+     * <li>Add 1 topic.</li>
+     * <li>Up vote topic 1 twice.</li>
+     * <li>Check if topic 1 has 2 vote.</li>
+     * </ol>
+     */
     @Test
     public void testUpVoteTopic(TestContext testContext) {
+        inMemTopicStore = new InMemTopicStore(vertx);
+
+        final String id = "1";
         CompositeFuture compositeFuture = CompositeFuture.join(Arrays.asList(
-                inMemTopicStore3.addTopic("Topic 1"),
-                inMemTopicStore3.addTopic("Topic 2")
+                inMemTopicStore.addTopic("Topic 1"),
+                inMemTopicStore.upVoteTopic(id),
+                inMemTopicStore.upVoteTopic(id)
         ));
 
         final Async async = testContext.async();
-
-        compositeFuture.setHandler(event -> {
-            if (event.succeeded()) {
-                inMemTopicStore3.upVoteTopic("2").setHandler(event1 -> {
-                    if (event1.succeeded()) {
-                        inMemTopicStore3.getTopics(2).setHandler(event2 -> {
-                            if (event2.succeeded()) {
-                                testContext.assertEquals(event2.result().get(1).getId(), "2");
-                            } else {
-                                fail();
-                            }
-
-                            async.complete();
-                        });
+        compositeFuture.setHandler(preTestCaseEvents -> {
+            if (preTestCaseEvents.succeeded()) {
+                inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
+                    if (getTopicsEvent.succeeded()) {
+                        testContext.assertEquals(getTopicsEvent.result().get(0).getVotes(), 2);
                     } else {
                         fail();
                     }
+
+                    async.complete();
                 });
             } else {
                 fail();
@@ -111,46 +94,86 @@ public class InMemTopicStoreTest extends TestCase {
         });
     }
 
+    /**
+     * Test goes as follows:
+     * <ol>
+     * <li>Add 1 topic.</li>
+     * <li>Down vote topic number 1.</li>
+     * <li>Up vote topic number 1.</li>
+     * <li>Down vote topic number 1.</li>
+     * <li>Check if topic 1 has 0. (It shouldn't be -1).</li>
+     * </ol>
+     */
     @Test
     public void testDownVoteTopic(TestContext testContext) {
+        inMemTopicStore = new InMemTopicStore(vertx);
+
+        final String id = "1";
         CompositeFuture compositeFuture = CompositeFuture.join(Arrays.asList(
-                inMemTopicStore4.addTopic("Topic 1"),
-                inMemTopicStore4.addTopic("Topic 2"),
-                inMemTopicStore4.upVoteTopic("1"),
-                inMemTopicStore4.upVoteTopic("2"),
-                inMemTopicStore4.upVoteTopic("2")
+                inMemTopicStore.addTopic("Topic 1"),
+                inMemTopicStore.downVoteTopic(id),
+                inMemTopicStore.upVoteTopic(id),
+                inMemTopicStore.downVoteTopic(id)
         ));
 
         final Async async = testContext.async();
-
-        compositeFuture.setHandler(event -> {
-            if (event.succeeded()) {
-                inMemTopicStore4.downVoteTopic("2").setHandler(event1 -> {
-                    if (event1.succeeded()) {
-                        inMemTopicStore4.downVoteTopic("2").setHandler(event2 -> {
-                            if (event2.succeeded()) {
-                                inMemTopicStore4.getTopics(2).setHandler(event3 -> {
-                                    if (event3.succeeded()) {
-                                        testContext.assertEquals(event3.result().get(1).getId(), "1");
-                                    } else {
-                                        fail();
-                                    }
-
-                                    async.complete();
-                                });
-                            } else {
-                                fail();
-                            }
-                        });
+        compositeFuture.setHandler(preTestCaseEvents -> {
+            if (preTestCaseEvents.succeeded()) {
+                inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
+                    if (getTopicsEvent.succeeded()) {
+                        testContext.assertEquals(getTopicsEvent.result().get(0).getVotes(), 0);
                     } else {
                         fail();
                     }
+
+                    async.complete();
                 });
             } else {
                 fail();
             }
         });
     }
+
+    /**
+     * Test goes as follows:
+     * <ol>
+     * <li>Add 4 topics.</li>
+     * <li>Up vote topic 4.</li>
+     * <li>Check if you have 4 topics and the first is topic 4.</li>
+     * </ol>
+     */
+    @Test
+    public void getTopics(TestContext testContext) {
+        inMemTopicStore = new InMemTopicStore(vertx);
+
+        final String topic4ID = "4";
+        CompositeFuture compositeFuture = CompositeFuture.join(Arrays.asList(
+                inMemTopicStore.addTopic("Topic 1"),
+                inMemTopicStore.addTopic("Topic 2"),
+                inMemTopicStore.addTopic("Topic 3"),
+                inMemTopicStore.addTopic("Topic 4"),
+                inMemTopicStore.upVoteTopic(topic4ID)
+        ));
+
+        final Async async = testContext.async();
+
+        compositeFuture.setHandler(event -> {
+            if (event.succeeded()) {
+                inMemTopicStore.getTopics(4).setHandler(preTestCaseEvents -> {
+                    if (preTestCaseEvents.succeeded()) {
+                        testContext.assertTrue(preTestCaseEvents.result().size() == 4 && preTestCaseEvents.result().get(0).getId().equals(topic4ID));
+                    } else {
+                        fail();
+                    }
+                });
+
+                async.complete();
+            } else {
+                fail();
+            }
+        });
+    }
+
 
     @Override
     protected void tearDown() {
