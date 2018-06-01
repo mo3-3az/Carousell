@@ -15,6 +15,7 @@ public class Main {
     private final static Logger LOG = Logger.getLogger(Main.class);
 
     public static void main(String[] args) {
+        //TODO: Remove for production
         System.setProperty("vertx.disableFileCaching", "true");
 
         Vertx vertx = Vertx.vertx();

@@ -1,7 +1,31 @@
+var eventBus;
 $( document ).ready(function() {
-    var eventBus = new EventBus('/eventbus');
+    eventBus = new EventBus('/eventbus');
 
     eventBus.onopen = function() {
-        eventBus.send("topics.manager", "Event bus on client is ready.");
+        eventBus.registerHandler('topics.manager.publish', function(error, message) {
+            if(!error){
+                reloadTopics(message);
+            }
+        });
     }
 });
+
+function registerTopic(){
+    var topicText = $("#topicText").val();
+
+    eventBus.send("topics.manager", topicText, function (reply){
+        if(!reply){
+            $("#topicText").val("");
+        }
+    });
+}
+
+function upVote(id){
+}
+
+function downTopics(id){
+}
+
+function reloadTopics(message){
+}
