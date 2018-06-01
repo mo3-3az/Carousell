@@ -46,7 +46,7 @@ public class InMemTopicStore implements TopicsStore {
                 final Map<String, Topic> result = event.result();
                 final Collection<Topic> topicCollection = result.values();
                 final List<Topic> topicsList = new ArrayList<>(topicCollection).subList(0, top > topicCollection.size() ? topicCollection.size() : top);
-                topicsList.sort((topic1, topic2) -> Integer.compare(topic2.getVotes(), topic1.getVotes()));
+                topicsList.sort((topic1, topic2) -> Integer.compare(topic2.getUpVotes(), topic1.getUpVotes()));
                 future.complete(topicsList);
             } else {
                 future.fail(event.cause());
