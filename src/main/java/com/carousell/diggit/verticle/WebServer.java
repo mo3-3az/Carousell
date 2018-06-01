@@ -9,7 +9,6 @@ import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
-import io.vertx.ext.web.handler.impl.TemplateHandlerImpl;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.templ.FreeMarkerTemplateEngine;
@@ -60,8 +59,10 @@ public class WebServer extends AbstractVerticle {
 
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         BridgeOptions options = new BridgeOptions();
-        options.addOutboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_PUBISH));
-        options.addInboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS));
+        options.addOutboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_OUTBOUND_NEW));
+        options.addInboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_INBOUND_ADD));
+        options.addInboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_INBOUND_LIST));
+        options.addInboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_INBOUND_VOTE));
         sockJSHandler.bridge(options);
         router.route(PATH_EVENT_BUS).handler(sockJSHandler);
 

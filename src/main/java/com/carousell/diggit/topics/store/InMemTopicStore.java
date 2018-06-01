@@ -8,7 +8,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.AsyncMap;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * In-memory implementation of the Topic Store.
@@ -45,8 +48,9 @@ public class InMemTopicStore implements TopicsStore {
         topics.entries(event -> {
             if (event.succeeded()) {
                 final Map<String, Topic> result = event.result();
-                final List<Topic> topicsList = new ArrayList<>(result.values()).subList(0, top);
-                topicsList.sort(Comparator.comparingInt(Topic::getVotes));
+                final Collection<Topic> topicCollection = result.values();
+                final List<Topic> topicsList = new ArrayList<>(topicCollection).subList(0, top > topicCollection.size() ? topicCollection.size() : top);
+                topicsList.sort((topic1, topic2) -> Integer.compare(topic2.getVotes(), topic1.getVotes()));
                 future.complete(topicsList);
             } else {
                 future.fail(event.cause());

@@ -1,8 +1,11 @@
 package com.carousell.diggit.topics;
 
 import io.vertx.core.buffer.impl.BufferImpl;
+import io.vertx.core.json.JsonObject;
 
-public class Topic extends BufferImpl {
+import java.io.Serializable;
+
+public class Topic extends BufferImpl implements Serializable {
 
     private String text;
     private String id;
@@ -14,6 +17,9 @@ public class Topic extends BufferImpl {
         setValue();
     }
 
+    public String getText() {
+        return text;
+    }
 
     public String getId() {
         return id;
@@ -40,7 +46,11 @@ public class Topic extends BufferImpl {
     private void setValue() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(id).append(text).append(votes);
-        appendString(stringBuilder.toString());
+        setString(0, stringBuilder.toString());
+    }
+
+    public JsonObject toJsonObject() {
+        return new JsonObject().put("id", id).put("text", text).put("votes", votes);
     }
 
 }
