@@ -13,34 +13,36 @@ import java.util.List;
 public interface TopicsStore {
 
     /**
-     * Get topics
+     * Get top topics ordered by up votes descending.
      *
-     * @param howMany
-     * @return
+     * @param top Number of top topics to get.
      */
-    Future<List<Topic>> getTopics(int howMany);
+    Future<List<Topic>> getTopTopics(int top);
 
     /**
-     * Register a topic and return it's ID.
+     * Get all topics.
+     */
+    Future<List<Topic>> getTopics();
+
+    /**
+     * Register a topic.
      *
      * @param text
-     * @return
+     * @return Newly added topic.
      */
-    Future<String> addTopic(String text);
+    Future<Topic> addTopic(String text);
 
     /**
-     * Up vote a topic and reorder based on up votes descending.
+     * Up vote a topic.
      *
      * @param id
-     * @return
      */
-    Future<Void> upVoteTopic(String id);
+    Future<Topic> upVoteTopic(String id);
 
     /**
-     * Down vote a topic and reorder based on up votes descending.
+     * Down vote a topic.
      *
      * @param id
-     * @return
      */
-    Future<Void> downVoteTopic(String id);
+    Future<Topic> downVoteTopic(String id);
 }

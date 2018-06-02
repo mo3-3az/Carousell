@@ -42,6 +42,19 @@ public class TopicTest extends TestCase {
     /**
      * Test goes as follows:
      * <ol>
+     * <li>Create a new topic with HTML markups as topic text.</li>
+     * <li>Check if text was escaped.</li>
+     * </ol>
+     */
+    @Test
+    public void testEscapeHTML() {
+        final Topic topic = new Topic("<h1>Header</h1> \" &", "1");
+        assertEquals(topic.getText(), "&lt;h1&gt;Header&lt;/h1&gt; &quot; &amp;");
+    }
+
+    /**
+     * Test goes as follows:
+     * <ol>
      * <li>Create a new topic.</li>
      * <li>Up vote the topic.</li>
      * <li>Down vote the topic.</li>

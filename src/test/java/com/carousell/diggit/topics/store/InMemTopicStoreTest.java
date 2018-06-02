@@ -42,7 +42,7 @@ public class InMemTopicStoreTest extends TestCase {
         final String text = "Topic 1";
         inMemTopicStore.addTopic(text).setHandler(addTopicEvent -> {
             if (addTopicEvent.succeeded()) {
-                inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
+                inMemTopicStore.getTopics().setHandler(getTopicsEvent -> {
                     if (getTopicsEvent.succeeded()) {
                         final List<Topic> topics = getTopicsEvent.result();
                         testContext.assertTrue(topics.size() == 1 && topics.get(0).getText().equals(text));
@@ -79,7 +79,7 @@ public class InMemTopicStoreTest extends TestCase {
         final Async async = testContext.async();
         compositeFuture.setHandler(preTestCaseEvents -> {
             if (preTestCaseEvents.succeeded()) {
-                inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
+                inMemTopicStore.getTopics().setHandler(getTopicsEvent -> {
                     if (getTopicsEvent.succeeded()) {
                         testContext.assertEquals(getTopicsEvent.result().get(0).getUpVotes(), 2);
                     } else {
@@ -115,7 +115,7 @@ public class InMemTopicStoreTest extends TestCase {
         final Async async = testContext.async();
         compositeFuture.setHandler(preTestCaseEvents -> {
             if (preTestCaseEvents.succeeded()) {
-                inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
+                inMemTopicStore.getTopics().setHandler(getTopicsEvent -> {
                     if (getTopicsEvent.succeeded()) {
                         testContext.assertEquals(getTopicsEvent.result().get(0).getDownVotes(), 1);
                     } else {
@@ -139,7 +139,7 @@ public class InMemTopicStoreTest extends TestCase {
      * </ol>
      */
     @Test
-    public void getTopics(TestContext testContext) {
+    public void getTopTopics(TestContext testContext) {
         inMemTopicStore = new InMemTopicStore(vertx);
 
         final String topic4ID = "4";
@@ -148,6 +148,7 @@ public class InMemTopicStoreTest extends TestCase {
                 inMemTopicStore.addTopic("Topic 2"),
                 inMemTopicStore.addTopic("Topic 3"),
                 inMemTopicStore.addTopic("Topic 4"),
+                inMemTopicStore.addTopic("Topic 5"),
                 inMemTopicStore.upVoteTopic(topic4ID)
         ));
 
@@ -155,9 +156,47 @@ public class InMemTopicStoreTest extends TestCase {
 
         compositeFuture.setHandler(event -> {
             if (event.succeeded()) {
-                inMemTopicStore.getTopics(4).setHandler(preTestCaseEvents -> {
+                inMemTopicStore.getTopTopics(4).setHandler(preTestCaseEvents -> {
                     if (preTestCaseEvents.succeeded()) {
                         testContext.assertTrue(preTestCaseEvents.result().size() == 4 && preTestCaseEvents.result().get(0).getId().equals(topic4ID));
+                    } else {
+                        fail();
+                    }
+                });
+
+                async.complete();
+            } else {
+                fail();
+            }
+        });
+    }
+
+    /**
+     * Test goes as follows:
+     * <ol>
+     * <li>Add 5 topics.</li>
+     * <li>Check if you have 5 topics.</li>
+     * </ol>
+     */
+    @Test
+    public void getTopics(TestContext testContext) {
+        inMemTopicStore = new InMemTopicStore(vertx);
+
+        CompositeFuture compositeFuture = CompositeFuture.join(Arrays.asList(
+                inMemTopicStore.addTopic("Topic 1"),
+                inMemTopicStore.addTopic("Topic 2"),
+                inMemTopicStore.addTopic("Topic 3"),
+                inMemTopicStore.addTopic("Topic 4"),
+                inMemTopicStore.addTopic("Topic 5")
+        ));
+
+        final Async async = testContext.async();
+
+        compositeFuture.setHandler(event -> {
+            if (event.succeeded()) {
+                inMemTopicStore.getTopics().setHandler(preTestCaseEvents -> {
+                    if (preTestCaseEvents.succeeded()) {
+                        testContext.assertTrue(preTestCaseEvents.result().size() == 5);
                     } else {
                         fail();
                     }
