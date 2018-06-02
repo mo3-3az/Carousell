@@ -9,7 +9,8 @@ public class Topic extends BufferImpl implements Serializable {
 
     private String text;
     private String id;
-    int votes;
+    private int upVotes;
+    private int downVotes;
 
     public Topic(String text, String id) {
         this.text = text;
@@ -25,32 +26,32 @@ public class Topic extends BufferImpl implements Serializable {
         return id;
     }
 
-    public int getVotes() {
-        return votes;
+    public int getUpVotes() {
+        return upVotes;
+    }
+
+    public int getDownVotes() {
+        return downVotes;
     }
 
     public void upVotes() {
-        votes++;
+        upVotes++;
         setValue();
     }
 
     public void downVotes() {
-        if (votes == 0) {
-            return;
-        }
-
-        votes--;
+        downVotes++;
         setValue();
     }
 
     private void setValue() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(id).append(text).append(votes);
+        stringBuilder.append(id).append(text).append(upVotes).append(downVotes);
         setString(0, stringBuilder.toString());
     }
 
     public JsonObject toJsonObject() {
-        return new JsonObject().put("id", id).put("text", text).put("votes", votes);
+        return new JsonObject().put("id", id).put("text", text).put("upVotes", upVotes).put("downVotes", downVotes);
     }
 
 }

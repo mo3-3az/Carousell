@@ -62,7 +62,7 @@ public class InMemTopicStoreTest extends TestCase {
      * <ol>
      * <li>Add 1 topic.</li>
      * <li>Up vote topic 1 twice.</li>
-     * <li>Check if topic 1 has 2 vote.</li>
+     * <li>Check if topic 1 has 2 up votes.</li>
      * </ol>
      */
     @Test
@@ -81,7 +81,7 @@ public class InMemTopicStoreTest extends TestCase {
             if (preTestCaseEvents.succeeded()) {
                 inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
                     if (getTopicsEvent.succeeded()) {
-                        testContext.assertEquals(getTopicsEvent.result().get(0).getVotes(), 2);
+                        testContext.assertEquals(getTopicsEvent.result().get(0).getUpVotes(), 2);
                     } else {
                         fail();
                     }
@@ -99,9 +99,7 @@ public class InMemTopicStoreTest extends TestCase {
      * <ol>
      * <li>Add 1 topic.</li>
      * <li>Down vote topic number 1.</li>
-     * <li>Up vote topic number 1.</li>
-     * <li>Down vote topic number 1.</li>
-     * <li>Check if topic 1 has 0. (It shouldn't be -1).</li>
+     * <li>Check if topic 1 has 1 down vote.</li>
      * </ol>
      */
     @Test
@@ -111,8 +109,6 @@ public class InMemTopicStoreTest extends TestCase {
         final String id = "1";
         CompositeFuture compositeFuture = CompositeFuture.join(Arrays.asList(
                 inMemTopicStore.addTopic("Topic 1"),
-                inMemTopicStore.downVoteTopic(id),
-                inMemTopicStore.upVoteTopic(id),
                 inMemTopicStore.downVoteTopic(id)
         ));
 
@@ -121,7 +117,7 @@ public class InMemTopicStoreTest extends TestCase {
             if (preTestCaseEvents.succeeded()) {
                 inMemTopicStore.getTopics(1).setHandler(getTopicsEvent -> {
                     if (getTopicsEvent.succeeded()) {
-                        testContext.assertEquals(getTopicsEvent.result().get(0).getVotes(), 0);
+                        testContext.assertEquals(getTopicsEvent.result().get(0).getDownVotes(), 1);
                     } else {
                         fail();
                     }

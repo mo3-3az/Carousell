@@ -15,12 +15,12 @@ import org.apache.log4j.Logger;
 import java.util.List;
 
 /**
- * This verticle will manage any functionality realted to topics, such as:
- * <ol>
+ * This verticle will manage any functionality related to topics, such as:
+ * <ul>
  * <li>Register Topics</li>
  * <li>Retrieve Topics</li>
  * <li>Vote Topics</li>
- * </ol>
+ * </ul>
  *
  * @author Moath
  */
@@ -33,7 +33,7 @@ public class TopicsManager extends AbstractVerticle {
 
     private final static Logger LOG = Logger.getLogger(TopicsManager.class);
     private static final int TOP = 20;
-    public static final int TOPIC_TEXT_MAX = 255;
+    private static final int TOPIC_TEXT_MAX = 255;
 
     private TopicsStore topicsStore;
 
@@ -68,7 +68,7 @@ public class TopicsManager extends AbstractVerticle {
                 return;
             }
 
-            topicsStore.addTopic(topicText).setHandler(event -> {
+            topicsStore.addTopic(escapeHTML(topicText)).setHandler(event -> {
                 if (event.succeeded()) {
                     publishTopics(eventBus);
                     handler.reply("Topic added.");
@@ -109,8 +109,6 @@ public class TopicsManager extends AbstractVerticle {
                 }
             });
         });
-
-
     }
 
     private void publishTopics(EventBus eventBus) {
@@ -127,5 +125,16 @@ public class TopicsManager extends AbstractVerticle {
                 LOG.warn("Unable to get top " + TOP + "topics!", event.cause());
             }
         });
+    }
+
+    private String escapeHTML(String text) {
+        final String[] toEscape = {"&", "\"", "<", ">"};
+        final String[] replaceWith = {"&amp;", "&quot;", "&lt;", "&gt;"};
+
+        for (int i = 0; i < toEscape.length; i++) {
+            text = text.replaceAll(toEscape[i], replaceWith[i]);
+        }
+
+        return text;
     }
 }
