@@ -58,7 +58,8 @@ function reloadTopics(message){
             $('#topics').find('tbody').append("<tr class='topic'>"
             + " <td class='no' id='id'>" + item.id + "</td> "
             + " <td id='text'>" + item.text + "</td> "
-            + " <td class='no' id='votes'>" + item.votes + "</td> "
+            + " <td class='no' id='upVotes'>" + item.upVotes + "</td> "
+            + " <td class='no' id='downVotes'>" + item.downVotes + "</td> "
             + " <td class='pull-right'> "
             + "<button type='button' class='btn btn-info' onclick='upVote(" + item.id + ")'>UP VOTE</button> "
             + " <button type='button' class='btn btn-info' onclick='downVote(" + item.id + ")'>DOWN VOTE</button> </td> </tr>");

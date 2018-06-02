@@ -19,18 +19,18 @@
 <body>
     <div class="container">
         <div class="span12">
-            <h1 class="h2 text-center">diggit</h1>
+            <h1 class="h2 text-center">diggit (<b>digg</b>redd**<b>it</b>)</h1>
         </div>
     </div>
     <div class="container">
         <div class="panel panel-default">
             <div class="panel-body">
                     <div class="form-group">
-                        <label for="topicText">Topic Text</label>
+                        <label for="topicText">Topic</label>
                         <textarea class="form-control" id="topicText" rows="3" maxlength="255"></textarea>
-                        <p id="topicAddedInfo" class="text-muted">Topic text under 255 characters.</p>
+                        <p id="topicAddedInfo" class="text-muted">Topic text must be under 255 characters.</p>
                         <button type="button" class="btn btn-info pull-right" onclick="registerTopic()">
-                            REGISTER TOPIC
+                            ADD TOPIC
                         </button>
                     </div>
             </div>
@@ -45,8 +45,9 @@
                 <thead>
                     <tr>
                         <th class="col-xs-1 name">ID</th>
-                        <th class="col-xs-5 name">Topic</th>
-                        <th class="col-xs-2">Votes</th>
+                        <th class="col-xs-4 name">Topic</th>
+                        <th class="col-xs-2">Up Votes</th>
+                        <th class="col-xs-2">Down Votes</th>
                         <th class="col-xs"></th>
                     </tr>
                 </thead>
