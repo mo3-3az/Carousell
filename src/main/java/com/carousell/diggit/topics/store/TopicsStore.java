@@ -6,7 +6,7 @@ import io.vertx.core.Future;
 import java.util.List;
 
 /**
- * This interface define the APIs to deal with topics.
+ * This interface defines the APIs to deal with topics.
  *
  * @author Moath
  */
@@ -27,7 +27,6 @@ public interface TopicsStore {
     /**
      * Register a topic.
      *
-     * @param text
      * @return Newly added topic.
      */
     Future<Topic> addTopic(String text);
@@ -35,14 +34,14 @@ public interface TopicsStore {
     /**
      * Up vote a topic.
      *
-     * @param id
+     * @return THe voted Topic.
      */
     Future<Topic> upVoteTopic(String id);
 
     /**
      * Down vote a topic.
      *
-     * @param id
+     * @return THe voted Topic.
      */
     Future<Topic> downVoteTopic(String id);
 }

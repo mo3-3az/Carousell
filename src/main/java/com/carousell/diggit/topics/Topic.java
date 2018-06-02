@@ -7,6 +7,12 @@ import java.io.Serializable;
 
 public class Topic extends BufferImpl implements Serializable {
 
+    static final String JSON_PROPERTY_TEXT = "text";
+    public static final String JSON_PROPERTY_ID = "id";
+    static final String JSON_PROPERTY_UP_VOTES = "upVotes";
+    static final String JSON_PROPERTY_DOWN_VOTES = "downVotes";
+    public static final String JSON_PROPERTY_VOTE_UP= "up";
+
     private String text;
     private String id;
     private int upVotes;
@@ -60,7 +66,11 @@ public class Topic extends BufferImpl implements Serializable {
     }
 
     public JsonObject toJsonObject() {
-        return new JsonObject().put("id", id).put("text", text).put("upVotes", upVotes).put("downVotes", downVotes);
+        return new JsonObject()
+                .put(JSON_PROPERTY_TEXT, text)
+                .put(JSON_PROPERTY_ID, id)
+                .put(JSON_PROPERTY_UP_VOTES, upVotes)
+                .put(JSON_PROPERTY_DOWN_VOTES, downVotes);
     }
 
 }
