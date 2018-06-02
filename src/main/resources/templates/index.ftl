@@ -19,7 +19,7 @@
 <body>
     <div class="container">
         <div class="span12">
-            <h1 class="h2 text-center">diggit (<b>digg</b>redd**<b>it</b>)</h1>
+            <h1 class="h2 text-center">diggit (<b>digg</b>redd<b>it</b>)</h1>
         </div>
     </div>
     <div class="container">
@@ -40,8 +40,8 @@
     <br>
     <div class="container instance">
         <div class="table-responsive">
-            <h2 class="module"></h2>
-            <table class="table table-striped" id="topics">
+            <h3 class="module">Top Topics</h3>
+            <table class="table table-striped" id="topTopics">
                 <thead>
                     <tr>
                         <th class="col-xs-1 name">ID</th>
@@ -50,6 +50,26 @@
                         <th class="col-xs-2">Down Votes</th>
                         <th class="col-xs"></th>
                     </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="container instance">
+        <div class="table-responsive">
+            <h3 class="module">Topics</h3>
+            <table class="table table-striped" id="topics">
+                <thead>
+                <tr>
+                    <th class="col-xs-1 name">ID</th>
+                    <th class="col-xs-4 name">Topic</th>
+                    <th class="col-xs-2">Up Votes</th>
+                    <th class="col-xs-2">Down Votes</th>
+                    <th class="col-xs"></th>
+                </tr>
                 </thead>
                 <tbody>
                 </tbody>

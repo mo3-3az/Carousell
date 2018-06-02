@@ -13,7 +13,7 @@ public class Topic extends BufferImpl implements Serializable {
     private int downVotes;
 
     public Topic(String text, String id) {
-        this.text = text;
+        this.text = escapeHTML(text);
         this.id = id;
         setValue();
     }
@@ -44,10 +44,19 @@ public class Topic extends BufferImpl implements Serializable {
         setValue();
     }
 
+    private String escapeHTML(String text) {
+        final String[] toEscape = {"&", "\"", "<", ">"};
+        final String[] replaceWith = {"&amp;", "&quot;", "&lt;", "&gt;"};
+
+        for (int i = 0; i < toEscape.length; i++) {
+            text = text.replaceAll(toEscape[i], replaceWith[i]);
+        }
+
+        return text;
+    }
+
     private void setValue() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(id).append(text).append(upVotes).append(downVotes);
-        setString(0, stringBuilder.toString());
+        setString(0, id + text + upVotes + downVotes);
     }
 
     public JsonObject toJsonObject() {

@@ -11,10 +11,10 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * In-memory implementation of the Topic Store.
+ * This class utilizes #AsyncMap as the data structure.
  *
  * @author Moath
  */
@@ -39,15 +39,15 @@ public class InMemTopicStore implements TopicsStore {
     }
 
     @Override
-    public Future<List<Topic>> getTopics(int top) {
+    public Future<List<Topic>> getTopTopics(int top) {
         Future<List<Topic>> future = Future.future();
-        topics.entries(event -> {
+        topics.values(event -> {
             if (event.succeeded()) {
-                final Map<String, Topic> result = event.result();
-                final Collection<Topic> topicCollection = result.values();
-                final List<Topic> topicsList = new ArrayList<>(topicCollection).subList(0, top > topicCollection.size() ? topicCollection.size() : top);
+                final Collection<Topic> topicCollection = event.result();
+                final int topicsSize = topicCollection.size();
+                final List<Topic> topicsList = new ArrayList<>(topicCollection);
                 topicsList.sort((topic1, topic2) -> Integer.compare(topic2.getUpVotes(), topic1.getUpVotes()));
-                future.complete(topicsList);
+                future.complete(topicsList.subList(0, top > topicsSize ? topicsSize : top));
             } else {
                 future.fail(event.cause());
                 LOG.error("Failed to get topics!", event.cause());
@@ -58,15 +58,31 @@ public class InMemTopicStore implements TopicsStore {
     }
 
     @Override
-    public Future<String> addTopic(String text) {
-        final Future<String> future = Future.future();
+    public Future<List<Topic>> getTopics() {
+        Future<List<Topic>> future = Future.future();
+        topics.values(event -> {
+            if (event.succeeded()) {
+                future.complete(new ArrayList<>(event.result()));
+            } else {
+                future.fail(event.cause());
+                LOG.error("Failed to get topics!", event.cause());
+            }
+        });
+
+        return future;
+    }
+
+    @Override
+    public Future<Topic> addTopic(String text) {
+        final Future<Topic> future = Future.future();
         final Future<String> id = idGenerator.generateID();
         id.setHandler(idHandler -> {
             if (idHandler.succeeded()) {
                 final String newTopicID = idHandler.result();
-                topics.put(newTopicID, new Topic(text, newTopicID), resPut -> {
+                final Topic newTopic = new Topic(text, newTopicID);
+                topics.put(newTopicID, newTopic, resPut -> {
                     if (resPut.succeeded()) {
-                        future.complete(newTopicID);
+                        future.complete(newTopic);
                         LOG.info("New topic added. ID: " + newTopicID);
                     } else {
                         future.fail(resPut.cause());
@@ -83,8 +99,8 @@ public class InMemTopicStore implements TopicsStore {
     }
 
     @Override
-    public Future<Void> upVoteTopic(String id) {
-        final Future<Void> future = Future.future();
+    public Future<Topic> upVoteTopic(String id) {
+        final Future<Topic> future = Future.future();
         topics.get(id, resGet -> {
             if (resGet.succeeded()) {
                 Topic topic = resGet.result();
@@ -92,7 +108,7 @@ public class InMemTopicStore implements TopicsStore {
 
                 topics.replace(id, topic, resReplace -> {
                     if (resReplace.succeeded()) {
-                        future.complete();
+                        future.complete(topic);
                         LOG.info("Topic up voted. ID: " + id);
                     } else {
                         future.fail(resReplace.cause());
@@ -109,8 +125,8 @@ public class InMemTopicStore implements TopicsStore {
     }
 
     @Override
-    public Future<Void> downVoteTopic(String id) {
-        final Future<Void> future = Future.future();
+    public Future<Topic> downVoteTopic(String id) {
+        final Future<Topic> future = Future.future();
         topics.get(id, resGet -> {
             if (resGet.succeeded()) {
                 Topic topic = resGet.result();
@@ -118,7 +134,7 @@ public class InMemTopicStore implements TopicsStore {
 
                 topics.replace(id, topic, resReplace -> {
                     if (resReplace.succeeded()) {
-                        future.complete();
+                        future.complete(topic);
                         LOG.info("Topic down voted. ID: " + id);
                     } else {
                         future.fail(resReplace.cause());
