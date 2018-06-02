@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Moath
  */
 public class InMemoryIDGenerator implements IDGenerator {
-    AtomicInteger id;
+    private AtomicInteger id;
 
     public InMemoryIDGenerator() {
         id = new AtomicInteger(0);

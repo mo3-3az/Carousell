@@ -1,10 +1,7 @@
 package com.carousell.diggit.verticle;
 
-import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -28,17 +25,6 @@ public class WebServer extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> future) {
-        ConfigRetriever retriever = ConfigRetriever.create(vertx);
-        retriever.getConfig(configHandler -> {
-            if (configHandler.failed()) {
-                future.fail("Failed to retrieve config.");
-            } else {
-                startWebServer(future, configHandler);
-            }
-        });
-    }
-
-    private void startWebServer(Future<Void> future, AsyncResult<JsonObject> configHandler) {
         Router router = Router.router(vertx);
 
         TemplateEngine engine = FreeMarkerTemplateEngine.create();
@@ -69,4 +55,5 @@ public class WebServer extends AbstractVerticle {
             }
         });
     }
+
 }

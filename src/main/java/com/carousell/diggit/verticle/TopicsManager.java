@@ -14,11 +14,22 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This verticle will manage any functionality related to topics, such as:
+ * This verticle will manage any functionality related to topics.
+ * <p>
+ * This vertical uses the Event Bus for server/client communications.
+ * The following consumers are registered to handle client calls.
  * <ul>
- * <li>Register Topics</li>
- * <li>Retrieve Topics</li>
- * <li>Vote Topics</li>
+ * <li>List all topics.</li>
+ * <li>List top topics.</li>
+ * <li>Add a new topic.</li>
+ * <li>Vote a topic.</li>
+ * </ul>
+ * <p>
+ * The client on the other hand will be listening for published messages, such as:
+ * <ul>
+ * <li>List top topics will publish upon any topic addition/voting.</li>
+ * <li>Addition of a new topic.</li>
+ * <li>Voting of a topic.</li>
  * </ul>
  *
  * @author Moath
@@ -49,6 +60,9 @@ public class TopicsManager extends AbstractVerticle {
     @Override
     public void start(Future<Void> future) {
         final EventBus eventBus = vertx.eventBus();
+
+        //Those futures are defined to track the completion of registering all the consumers in order to
+        //indicate that the verticle is ready.
         Future listTopicsConsumer = Future.future();
         Future listTopTopicsConsumer = Future.future();
         Future addTopicConsumer = Future.future();
@@ -83,8 +97,7 @@ public class TopicsManager extends AbstractVerticle {
 
             topicsStore.addTopic(topicText).setHandler(event -> {
                 if (event.succeeded()) {
-                    final Topic topic = event.result();
-                    publishTopicAdded(eventBus, topic);
+                    publishTopicAdded(eventBus, event.result());
                     publishTopTopics(eventBus);
                     handler.reply("Topic added successfully.");
                 } else {
@@ -101,13 +114,13 @@ public class TopicsManager extends AbstractVerticle {
             }
 
             JsonObject body = (JsonObject) handler.body();
-            final String id = body.getInteger("id").toString();
+            final String id = body.getInteger(Topic.JSON_PROPERTY_ID).toString();
             if (id.trim().isEmpty()) {
                 LOG.warn("Topic wasn't voted, topic id is empty!");
                 return;
             }
 
-            boolean voteUp = body.getBoolean("up");
+            boolean voteUp = body.getBoolean(Topic.JSON_PROPERTY_VOTE_UP);
 
             final Future<Topic> voteTopic;
             if (voteUp) {
@@ -118,8 +131,7 @@ public class TopicsManager extends AbstractVerticle {
 
             voteTopic.setHandler(event -> {
                 if (event.succeeded()) {
-                    final Topic topic = event.result();
-                    publishTopicVoted(eventBus, topic);
+                    publishTopicVoted(eventBus, event.result());
                     publishTopTopics(eventBus);
                 } else {
                     LOG.warn("Topic wasn't voted!", event.cause());
@@ -128,6 +140,8 @@ public class TopicsManager extends AbstractVerticle {
         }).completionHandler(getConsumerCompletionHandler(voteTopicConsumer));
 
 
+        //Whenever all completes the future of this verticle will complete.
+        //If any fails, the future will fail.
         consumersHandlers.setHandler(event -> {
             if (event.succeeded()) {
                 future.complete();
@@ -145,20 +159,10 @@ public class TopicsManager extends AbstractVerticle {
         eventBus.publish(TOPICS_MANAGER_ADDRESS_OUTBOUND_VOTE, votedTopic.toJsonObject());
     }
 
-    private Handler<AsyncResult<Void>> getConsumerCompletionHandler(Future future) {
-        return event -> {
-            if (event.succeeded()) {
-                future.complete();
-            } else {
-                future.fail(event.cause());
-            }
-        };
-    }
-
     private void replyTopics(Message<Object> handler) {
         topicsStore.getTopics().setHandler(event -> {
             if (event.succeeded()) {
-                JsonArray topics = getTopicsJsonArray(event);
+                JsonArray topics = getTopicsJsonArray(event.result());
                 handler.reply(topics);
             } else {
                 LOG.warn("Unable to get topics!", event.cause());
@@ -169,7 +173,7 @@ public class TopicsManager extends AbstractVerticle {
     private void replyTopTopics(Message<Object> handler) {
         topicsStore.getTopTopics(TOP).setHandler(event -> {
             if (event.succeeded()) {
-                JsonArray topics = getTopicsJsonArray(event);
+                JsonArray topics = getTopicsJsonArray(event.result());
                 handler.reply(topics);
             } else {
                 LOG.warn("Unable to get top " + TOP + "topics!", event.cause());
@@ -180,8 +184,7 @@ public class TopicsManager extends AbstractVerticle {
     private void publishTopTopics(EventBus eventBus) {
         topicsStore.getTopTopics(TOP).setHandler(event -> {
             if (event.succeeded()) {
-                JsonArray topics = getTopicsJsonArray(event);
-
+                JsonArray topics = getTopicsJsonArray(event.result());
                 eventBus.publish(TOPICS_MANAGER_ADDRESS_OUTBOUND_LIST_TOP, topics);
             } else {
                 LOG.warn("Unable to get top " + TOP + "topics!", event.cause());
@@ -189,11 +192,20 @@ public class TopicsManager extends AbstractVerticle {
         });
     }
 
-    private JsonArray getTopicsJsonArray(AsyncResult<List<Topic>> event) {
-        final List<Topic> result = event.result();
+    private JsonArray getTopicsJsonArray(List<Topic> topicsList) {
         JsonArray topics = new JsonArray();
-        result.forEach(topic -> topics.add(topic.toJsonObject()));
+        topicsList.forEach(topic -> topics.add(topic.toJsonObject()));
         return topics;
+    }
+
+    private Handler<AsyncResult<Void>> getConsumerCompletionHandler(Future future) {
+        return event -> {
+            if (event.succeeded()) {
+                future.complete();
+            } else {
+                future.fail(event.cause());
+            }
+        };
     }
 
 }

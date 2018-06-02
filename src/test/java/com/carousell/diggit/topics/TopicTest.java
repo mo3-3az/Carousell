@@ -66,6 +66,10 @@ public class TopicTest extends TestCase {
         final Topic topic = new Topic("1", "1");
         topic.upVotes();
         topic.downVotes();
-        assertEquals(topic.toJsonObject(), new JsonObject().put("text", "1").put("id", "1").put("upVotes", 1).put("downVotes", 1));
+        assertEquals(topic.toJsonObject(), new JsonObject()
+                .put(Topic.JSON_PROPERTY_TEXT, "1")
+                .put(Topic.JSON_PROPERTY_ID, "1")
+                .put(Topic.JSON_PROPERTY_UP_VOTES, 1)
+                .put(Topic.JSON_PROPERTY_DOWN_VOTES, 1));
     }
 }
