@@ -1,0 +1,5 @@
+{
+  "defaultHttpPort": 8080,
+  "topTopicsSize": 20,
+  "topicTextMaxSize": 255
+}

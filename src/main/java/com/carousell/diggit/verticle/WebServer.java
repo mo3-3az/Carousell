@@ -1,5 +1,6 @@
 package com.carousell.diggit.verticle;
 
+import com.carousell.diggit.config.ConfigKeys;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.bridge.PermittedOptions;
@@ -19,7 +20,6 @@ import io.vertx.ext.web.templ.TemplateEngine;
 public class WebServer extends AbstractVerticle {
 
     private static final String SYS_PROPERTY_HTTP_PORT = "http.port";
-    private static final int DEFAULT_HTTP_PORT = 8080;
     private static final String ROOT_PATH = "/";
     private static final String PATH_EVENT_BUS = "/eventbus/*";
 
@@ -34,6 +34,19 @@ public class WebServer extends AbstractVerticle {
         final StaticHandler staticHandler = StaticHandler.create();
         router.route("/*").handler(staticHandler);
 
+        setJSSocketHandler(router);
+
+        vertx.createHttpServer().requestHandler(router::accept)
+                .listen(Integer.getInteger(SYS_PROPERTY_HTTP_PORT, vertx.getOrCreateContext().config().getInteger(ConfigKeys.DEFAULT_HTTP_PORT)), result -> {
+                    if (result.failed()) {
+                        future.fail(result.cause());
+                    } else {
+                        future.complete();
+                    }
+                });
+    }
+
+    private void setJSSocketHandler(Router router) {
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         BridgeOptions options = new BridgeOptions();
         options.addInboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_INBOUND_ADD));
@@ -45,15 +58,6 @@ public class WebServer extends AbstractVerticle {
         options.addOutboundPermitted(new PermittedOptions().setAddress(TopicsManager.TOPICS_MANAGER_ADDRESS_OUTBOUND_LIST_TOP));
         sockJSHandler.bridge(options);
         router.route(PATH_EVENT_BUS).handler(sockJSHandler);
-
-
-        vertx.createHttpServer().requestHandler(router::accept).listen(Integer.getInteger(SYS_PROPERTY_HTTP_PORT, DEFAULT_HTTP_PORT), result -> {
-            if (result.failed()) {
-                future.fail(result.cause());
-            } else {
-                future.complete();
-            }
-        });
     }
 
 }
