@@ -42,8 +42,10 @@ function registerTopic(){
 
     eventBus.send("topics.manager.in.add", topicText, function (ar_error, ar){
         if(ar_error == null){
-            $("#topicText").val("");
-            $("#topicAddedInfo").html(ar.body);
+            if(ar.body.success){
+                $("#topicText").val("");
+            }
+            $("#topicAddedInfo").html(ar.body.msg);
             setTimeout(function() {
                $( "#topicAddedInfo" ).html("Topic text under 255 characters.");
             }, 3000);
@@ -75,13 +77,13 @@ function topicAdded(message){
     }
 
    var item = message.body;
-   $('#topics').find('tbody').append("<tr class='topic'>"
-   + " <td class='no' id='id'>" + item.id + "</td> "
-   + " <td id='text'>" + item.text + "</td> "
-   + " <td class='no' id='upVotes'>" + item.upVotes + "</td> "
-   + " <td class='no' id='downVotes'>" + item.downVotes + "</td> "
+   $('#topics').find('tbody').append("<tr id='topic" + item.id + "'>"
+   + " <td class='id'>" + item.id + "</td> "
+   + " <td class='text'>" + item.text + "</td> "
+   + " <td class='upVotes'>" + item.upVotes + "</td> "
+   + " <td class='downVotes'>" + item.downVotes + "</td> "
    + " <td class='pull-right'> "
-   + "<button type='button' class='btn btn-info' onclick='upVote(" + item.id + ")'>UP VOTE</button> "
+   + " <button type='button' class='btn btn-info' onclick='upVote(" + item.id + ")'>UP VOTE</button> "
    + " <button type='button' class='btn btn-info' onclick='downVote(" + item.id + ")'>DOWN VOTE</button> </td> </tr>");
 }
 
@@ -104,13 +106,10 @@ function reloadTopTopics(message){
 
     $.each(message.body, function(i, item) {
             $('#topTopics').find('tbody').append("<tr>"
-            + " <td class='no'>" + item.id + "</td> "
             + " <td class='text'>" + item.text + "</td> "
             + " <td class='upVotes'>" + item.upVotes + "</td> "
             + " <td class='downVotes'>" + item.downVotes + "</td> "
-            + " <td class='pull-right'> "
-            + " <button type='button' class='btn btn-info' onclick='upVote(" + item.id + ")'>UP VOTE</button> "
-            + " <button type='button' class='btn btn-info' onclick='downVote(" + item.id + ")'>DOWN VOTE</button> </td> </tr>");
+            + " </tr>");
     });
 }
 

@@ -41,14 +41,12 @@
     <div class="container instance">
         <div class="table-responsive">
             <h3 class="module">Top Topics</h3>
-            <table class="table table-striped" id="topTopics">
+            <table class="table table-sm" id="topTopics">
                 <thead>
                     <tr>
-                        <th class="col-xs-1 name">ID</th>
-                        <th class="col-xs-4 name">Topic</th>
+                        <th class="col-xs">Topic</th>
                         <th class="col-xs-2">Up Votes</th>
                         <th class="col-xs-2">Down Votes</th>
-                        <th class="col-xs"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,14 +59,14 @@
     <div class="container instance">
         <div class="table-responsive">
             <h3 class="module">Topics</h3>
-            <table class="table table-striped" id="topics">
+            <table class="table table-borderless" id="topics">
                 <thead>
                 <tr>
-                    <th class="col-xs-1 name">ID</th>
-                    <th class="col-xs-4 name">Topic</th>
+                    <th class="col-xs-1">ID</th>
+                    <th class="col-xs-4">Topic</th>
                     <th class="col-xs-2">Up Votes</th>
                     <th class="col-xs-2">Down Votes</th>
-                    <th class="col-xs"></th>
+                    <th class="col-xs-3" style="text-align: center">Vote Actions</th>
                 </tr>
                 </thead>
                 <tbody>

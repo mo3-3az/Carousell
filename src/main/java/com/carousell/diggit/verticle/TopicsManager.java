@@ -1,5 +1,6 @@
 package com.carousell.diggit.verticle;
 
+import com.carousell.diggit.config.ConfigKeys;
 import com.carousell.diggit.topics.Topic;
 import com.carousell.diggit.topics.store.InMemTopicStore;
 import com.carousell.diggit.topics.store.TopicsStore;
@@ -46,15 +47,17 @@ public class TopicsManager extends AbstractVerticle {
     static final String TOPICS_MANAGER_ADDRESS_OUTBOUND_VOTE = "topics.manager.out.vote";
 
     private final static Logger LOG = Logger.getLogger(TopicsManager.class);
-    private static final int TOP = 20;
-    private static final int TOPIC_TEXT_MAX = 255;
 
     private TopicsStore topicsStore;
+    private int topicTextMaxSize;
+    private int topTopicsSize;
 
     @Override
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
         topicsStore = new InMemTopicStore(vertx);
+        topicTextMaxSize = vertx.getOrCreateContext().config().getInteger(ConfigKeys.TOPIC_TEXT_MAX_SIZE);
+        topTopicsSize = vertx.getOrCreateContext().config().getInteger(ConfigKeys.TOP_TOPICS_SIZE);
     }
 
     @Override
@@ -80,18 +83,18 @@ public class TopicsManager extends AbstractVerticle {
 
         eventBus.localConsumer(TOPICS_MANAGER_ADDRESS_INBOUND_ADD, handler -> {
             if (handler.body() == null) {
-                handler.reply("Topic wasn't registered, topic text is null!");
+                handler.reply(new JsonObject().put("msg", "Topic wasn't registered, topic text is null!"));
                 return;
             }
 
             final String topicText = handler.body().toString();
             if (topicText.trim().isEmpty()) {
-                handler.reply("Topic wasn't registered, topic text is empty!");
+                handler.reply(new JsonObject().put("msg", "Topic wasn't registered, topic text is empty!"));
                 return;
             }
 
-            if (topicText.trim().length() > TOPIC_TEXT_MAX) {
-                handler.reply("Topic wasn't registered, topic text exceeds " + TOPIC_TEXT_MAX + "!");
+            if (topicText.trim().length() > topicTextMaxSize) {
+                handler.reply(new JsonObject().put("msg", "Topic wasn't registered, topic text exceeds " + topicTextMaxSize + "!"));
                 return;
             }
 
@@ -99,7 +102,7 @@ public class TopicsManager extends AbstractVerticle {
                 if (event.succeeded()) {
                     publishTopicAdded(eventBus, event.result());
                     publishTopTopics(eventBus);
-                    handler.reply("Topic added successfully.");
+                    handler.reply(new JsonObject().put("msg", "Topic added successfully.").put("success", true));
                 } else {
                     LOG.warn("Topic wasn't added!", event.cause());
                 }
@@ -171,23 +174,23 @@ public class TopicsManager extends AbstractVerticle {
     }
 
     private void replyTopTopics(Message<Object> handler) {
-        topicsStore.getTopTopics(TOP).setHandler(event -> {
+        topicsStore.getTopTopics(topTopicsSize).setHandler(event -> {
             if (event.succeeded()) {
                 JsonArray topics = getTopicsJsonArray(event.result());
                 handler.reply(topics);
             } else {
-                LOG.warn("Unable to get top " + TOP + "topics!", event.cause());
+                LOG.warn("Unable to get top " + topTopicsSize + "topics!", event.cause());
             }
         });
     }
 
     private void publishTopTopics(EventBus eventBus) {
-        topicsStore.getTopTopics(TOP).setHandler(event -> {
+        topicsStore.getTopTopics(topTopicsSize).setHandler(event -> {
             if (event.succeeded()) {
                 JsonArray topics = getTopicsJsonArray(event.result());
                 eventBus.publish(TOPICS_MANAGER_ADDRESS_OUTBOUND_LIST_TOP, topics);
             } else {
-                LOG.warn("Unable to get top " + TOP + "topics!", event.cause());
+                LOG.warn("Unable to get top " + topTopicsSize + "topics!", event.cause());
             }
         });
     }
