@@ -5,13 +5,13 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.Serializable;
 
-public class Topic extends BufferImpl implements Serializable {
+public class Topic extends BufferImpl implements Serializable, Comparable<Topic> {
 
     static final String JSON_PROPERTY_TEXT = "text";
     public static final String JSON_PROPERTY_ID = "id";
     static final String JSON_PROPERTY_UP_VOTES = "upVotes";
     static final String JSON_PROPERTY_DOWN_VOTES = "downVotes";
-    public static final String JSON_PROPERTY_VOTE_UP= "up";
+    public static final String JSON_PROPERTY_VOTE_UP = "up";
 
     private String text;
     private String id;
@@ -73,4 +73,17 @@ public class Topic extends BufferImpl implements Serializable {
                 .put(JSON_PROPERTY_DOWN_VOTES, downVotes);
     }
 
+    @Override
+    public int compareTo(Topic topic) {
+        return Integer.compare(topic.getUpVotes(), getUpVotes());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Topic)) {
+            return false;
+        }
+
+        return ((Topic) o).getId().equals(getId());
+    }
 }

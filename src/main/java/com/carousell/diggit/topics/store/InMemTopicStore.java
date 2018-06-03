@@ -1,5 +1,6 @@
 package com.carousell.diggit.topics.store;
 
+import com.carousell.diggit.config.ConfigKeys;
 import com.carousell.diggit.topics.Topic;
 import com.carousell.diggit.topics.idgen.IDGenerator;
 import com.carousell.diggit.topics.idgen.InMemoryIDGenerator;
@@ -9,7 +10,6 @@ import io.vertx.core.shareddata.AsyncMap;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -26,9 +26,12 @@ public class InMemTopicStore implements TopicsStore {
 
     private IDGenerator idGenerator;
     private AsyncMap<String, Topic> topics;
+    private List<Topic> topTopics;
+    private int topTopicsSize;
 
     public InMemTopicStore(Vertx vertx) {
         this.idGenerator = new InMemoryIDGenerator();
+        this.topTopicsSize = vertx.getOrCreateContext().config().getInteger(ConfigKeys.TOP_TOPICS_SIZE, 20);
         vertx.sharedData().<String, Topic>getAsyncMap(TOPICS_MAP, res -> {
             if (res.succeeded()) {
                 topics = res.result();
@@ -36,18 +39,16 @@ public class InMemTopicStore implements TopicsStore {
                 LOG.error("Something went wrong initializing the topics map!", res.cause());
             }
         });
+
+        topTopics = new ArrayList<>();
     }
 
     @Override
-    public Future<List<Topic>> getTopTopics(int top) {
+    public Future<List<Topic>> getTopTopics() {
         Future<List<Topic>> future = Future.future();
         topics.values(event -> {
             if (event.succeeded()) {
-                final Collection<Topic> topicCollection = event.result();
-                final int topicsSize = topicCollection.size();
-                final List<Topic> topicsList = new ArrayList<>(topicCollection);
-                topicsList.sort((topic1, topic2) -> Integer.compare(topic2.getUpVotes(), topic1.getUpVotes()));
-                future.complete(topicsList.subList(0, top > topicsSize ? topicsSize : top));
+                future.complete(topTopics);
             } else {
                 future.fail(event.cause());
                 LOG.error("Failed to get topics!", event.cause());
@@ -108,6 +109,7 @@ public class InMemTopicStore implements TopicsStore {
 
                 topics.replace(id, topic, resReplace -> {
                     if (resReplace.succeeded()) {
+                        reflectOnTopTopics(topic);
                         future.complete(topic);
                         LOG.info("Topic up voted. ID: " + id);
                     } else {
@@ -122,6 +124,17 @@ public class InMemTopicStore implements TopicsStore {
         });
 
         return future;
+    }
+
+    private void reflectOnTopTopics(Topic topic) {
+        synchronized (topTopics) {
+            topTopics.remove(topic);
+            topTopics.add(topic);
+            topTopics.sort(Topic::compareTo);
+
+            //Keep the list to the required size.
+            topTopics = topTopics.subList(0, topTopicsSize > topTopics.size() ? topTopics.size() : topTopicsSize);
+        }
     }
 
     @Override

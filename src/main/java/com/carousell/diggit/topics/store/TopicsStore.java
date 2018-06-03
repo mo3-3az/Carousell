@@ -15,9 +15,8 @@ public interface TopicsStore {
     /**
      * Get top topics ordered by up votes descending.
      *
-     * @param top Number of top topics to get.
      */
-    Future<List<Topic>> getTopTopics(int top);
+    Future<List<Topic>> getTopTopics();
 
     /**
      * Get all topics.

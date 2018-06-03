@@ -174,7 +174,7 @@ public class TopicsManager extends AbstractVerticle {
     }
 
     private void replyTopTopics(Message<Object> handler) {
-        topicsStore.getTopTopics(topTopicsSize).setHandler(event -> {
+        topicsStore.getTopTopics().setHandler(event -> {
             if (event.succeeded()) {
                 JsonArray topics = getTopicsJsonArray(event.result());
                 handler.reply(topics);
@@ -185,7 +185,7 @@ public class TopicsManager extends AbstractVerticle {
     }
 
     private void publishTopTopics(EventBus eventBus) {
-        topicsStore.getTopTopics(topTopicsSize).setHandler(event -> {
+        topicsStore.getTopTopics().setHandler(event -> {
             if (event.succeeded()) {
                 JsonArray topics = getTopicsJsonArray(event.result());
                 eventBus.publish(TOPICS_MANAGER_ADDRESS_OUTBOUND_LIST_TOP, topics);
